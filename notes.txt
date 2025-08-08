@@ -1,0 +1,28 @@
+normalize input data
+
+kaiming initialization -> default pytorch initialization which is usually good enough
+xavier initialization
+
+for optimizers, use AdamW(not the regular adam) or LION
+
+schedule learning rates(start with high, and once it doesn't work well, decrease learning rate)
+use step or cosine for schedule learning rate
+
+larger batch size = larger learning rate
+
+learning rate warmup
+
+save model every couple epochs so you don't have to figure out when to stop
+
+data augmentation: for img, crop, scale, and flip
+
+deeper networks will generally overfit more: e.g. first layer overfits, then the second
+layer will use the overfit activation from previous layer
+to prevent this, use dropout
+
+IF USING DROPOUT, USE MODEL.EVAL() DURING EVALUATION, AND MODEL.TRAIN() DURING TRAINING
+
+add dropout before fully connected layers. in transformers, used before multilevel perceptrons
+
+create big models with regularization -> keep weight small through weight decay
+always use it with AdamW, so that model doesn't explode

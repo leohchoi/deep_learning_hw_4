@@ -24,6 +24,25 @@ class MLPPlanner(nn.Module):
         self.n_track = n_track
         self.n_waypoints = n_waypoints
 
+        input_dim = n_track * 4
+        hidden_dims = [128, 128, 64]
+        dropout = 0.1
+        layers: list[nn.Module] = []
+        prev = input_dim
+        for h in hidden_dims:
+            layers.append(nn.Linear(prev, h))
+            layers.append(nn.ReLU())
+            if dropout > 0:
+                layers.append(nn.Dropout(dropout))
+            prev = h
+        layers.append(nn.Linear(prev, n_waypoints * 2))
+        self.mlp = nn.Sequential(*layers)
+
+        for m in self.mlp:
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_uniform_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+
     def forward(
         self,
         track_left: torch.Tensor,
@@ -43,7 +62,9 @@ class MLPPlanner(nn.Module):
         Returns:
             torch.Tensor: future waypoints with shape (b, n_waypoints, 2)
         """
-        raise NotImplementedError
+        x = torch.cat([track_left, track_right], dim=2).flatten(start_dim=1)
+        out = self.mlp(x)
+        return out.view(x.size(0), self.n_waypoints, 2)
 
 
 class TransformerPlanner(nn.Module):
