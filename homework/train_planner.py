@@ -37,7 +37,7 @@ def _forward(model_name: str, model: torch.nn.Module, batch: dict[str, torch.Ten
 
 
 def _masked_l1_loss(pred: torch.Tensor, gt: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-    l1 = (pred - gt).abs() * mask[..., None]  # (b, n, 2)
+    l1 = (pred - gt).abs() * mask[..., None]
     return l1.sum() / mask.sum()
 
 def train(
@@ -46,6 +46,7 @@ def train(
     num_epoch: int = 30,
     lr: float = 1e-3,
     batch_size: int = 32,
+    num_workers: int = 4,
     seed: int = 2025,
 ):
     if torch.cuda.is_available():
@@ -67,13 +68,14 @@ def train(
     train_loader = road_dataset.load_data(
         "drive_data/train",
         transform_pipeline=transform_pipeline,
-        num_workers=4,
+        num_workers=num_workers,
         batch_size=batch_size,
         shuffle=True,
     )
     val_loader = road_dataset.load_data(
         "drive_data/val",
         transform_pipeline=transform_pipeline,
+        num_workers=num_workers,
         batch_size=batch_size,
         shuffle=False,
     )
@@ -143,6 +145,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_epoch", type=int, default=30)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2025)
 
     train(**vars(parser.parse_args()))
